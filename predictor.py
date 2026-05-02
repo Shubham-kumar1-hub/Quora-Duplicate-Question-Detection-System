@@ -52,6 +52,7 @@ def predict_pair(q1: str, q2: str, model, feature_cols: list, sbert):
     feats = build_feature_dict(q1, q2, sbert)
     # feature_cols from quora_features.pkl controls the exact order the model expects
     X = pd.DataFrame([feats])[feature_cols]
-    pred = int(model.predict(X)[0])
     prob = float(model.predict_proba(X)[0][1])
+    THRESHOLD = 0.35  # lowered from 0.5 for better recall
+    pred = 1 if prob >= THRESHOLD else 0
     return pred, prob, feats

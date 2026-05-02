@@ -24,8 +24,27 @@ CONTRACTIONS = {
     "you're": "you are", "you've": "you have"
 }
 
+ABBREV_MAP = {
+    r'\bML\b': 'machine learning',
+    r'\bAI\b': 'artificial intelligence',
+    r'\bNLP\b': 'natural language processing',
+    r'\bDL\b': 'deep learning',
+    r'\bNN\b': 'neural network',
+    r'\bCV\b': 'computer vision',
+    r'\bDB\b': 'database',
+    r'\bOS\b': 'operating system',
+    r'\bAPI\b': 'application programming interface',
+    r'\bSQL\b': 'structured query language',
+}
+
+def expand_abbreviations(q):
+    for pattern, expansion in ABBREV_MAP.items():
+        q = re.sub(pattern, expansion, q)
+    return q
+
 def preprocess(q):
-    q = str(q).lower().strip()
+    q = expand_abbreviations(str(q).strip())
+    q = q.lower().strip()
     q = q.replace('%', ' percent ').replace('$', ' dollar ')
     q = q.replace('rupee', ' rupee ').replace('euro', ' euro ')
     q = q.replace('@', ' at ').replace('[math]', '')
