@@ -1,104 +1,82 @@
-# Quora Duplicate Question Detection System
+# Quora Duplicate Question Detection — FastAPI
 
-A Machine Learning based NLP application that detects whether two questions are duplicates or not, similar to the system used by Quora.  
-The project combines **feature engineering, semantic embeddings, and machine learning** to determine question similarity.
+## Project Structure
+```
+quora_fastapi/
+├── app/
+│   ├── __init__.py
+│   ├── main.py          # FastAPI app, routes
+│   ├── preprocess.py    # Text cleaning (contractions, HTML, punctuation)
+│   ├── features.py      # Token, length, fuzzy feature extraction
+│   └── predictor.py     # Combines features + SBERT + model inference
+├── requirements.txt
+└── README.md
+```
 
----
+## Setup
 
-## Project Overview
+### 1. Install dependencies
+```bash
+pip install -r requirements.txt
+```
 
-Quora receives millions of questions from users. Many of these questions are duplicates or semantically similar. Detecting duplicate questions helps improve content quality and user experience.
+### 2. Place your trained model files in the project root
+After running the notebook, copy these two files here:
+- `quora_best_model.pkl`
+- `quora_features.pkl`
 
-This project builds a **duplicate question detection system** using the **Quora Question Pairs dataset** and applies multiple NLP techniques to identify semantic similarity between question pairs.
+### 3. Run the server
+```bash
+cd quora_fastapi
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+```
 
----
-
-## Features
-
-- Text preprocessing and cleaning
-- Feature engineering using multiple similarity techniques
-- Fuzzy string matching
-- Semantic similarity using **Sentence Transformers (SBERT)**
-- Machine Learning model for classification
-- FastAPI REST API for prediction
-- Simple web interface for user input
-
----
-
-## Tech Stack
-
-**Programming Language**
-- Python
-
-**Libraries**
-- Pandas
-- NumPy
-- Scikit-learn
-- Sentence Transformers
-- FuzzyWuzzy
-- BeautifulSoup
-- TensorFlow
-
-**Backend Framework**
-- FastAPI
-
-**Deployment Tools**
-- Uvicorn
+### 4. Open API docs
+Visit: http://localhost:8000/docs
 
 ---
 
-## Dataset
+## API Endpoints
 
-The project uses the **Quora Question Pairs dataset**, which contains pairs of questions and a label indicating whether they are duplicates.
-
-Dataset contains:
-
-- Question 1
-- Question 2
-- Duplicate label (0 or 1)
-
-Source:
-https://www.kaggle.com/c/quora-question-pairs
+| Method | Endpoint          | Description                        |
+|--------|-------------------|------------------------------------|
+| GET    | `/`               | Health check                       |
+| GET    | `/health`         | Model/SBERT load status            |
+| GET    | `/features`       | List all 18 model features         |
+| POST   | `/predict`        | Predict a single question pair     |
+| POST   | `/predict/batch`  | Predict up to 50 pairs at once     |
 
 ---
 
-## Feature Engineering
+## Example Request
 
-Several handcrafted and semantic features were used:
+```bash
+curl -X POST http://localhost:8000/predict \
+  -H "Content-Type: application/json" \
+  -d '{
+    "question1": "What is the best way to learn machine learning?",
+    "question2": "How can I start learning ML from scratch?"
+  }'
+```
 
-### Text Similarity Features
-- Fuzzy ratio
-- Partial fuzzy ratio
-- Token sort ratio
-- Token set ratio
+## Example Response
+```json
+{
+  "question1": "What is the best way to learn machine learning?",
+  "question2": "How can I start learning ML from scratch?",
+  "is_duplicate": true,
+  "label": "Duplicate",
+  "duplicate_probability": 0.8741,
+  "features": {
+    "cwc_min": 0.6667,
+    "sbert_cosine": 0.9123,
+    ...
+  }
+}
+```
 
-### Length Based Features
-- Absolute length difference
-- Mean question length
-
-### Word Matching Features
-- First word match
-- Last word match
-- Word overlap ratio
-
-### Character Similarity
-- Character set overlap
-- Character total counts
-
-### Semantic Features
-- SBERT cosine similarity
-- SBERT dot product similarity
-- SBERT absolute difference
-
-### Substring Feature
-- Longest common substring ratio
-
-Total features used: **18**
-
----
-
-## Model
-
-The final trained model is saved using **Joblib** and used during inference.
-
-Pipeline:
+## Features Used (18 total)
+- **Token-based (8):** cwc_min, cwc_max, csc_min, csc_max, ctc_min, ctc_max, last_word_eq, first_word_eq
+- **Length-based (3):** abs_len_diff, mean_len, longest_substr_ratio
+- **Fuzzy (4):** fuzz_ratio, fuzz_partial_ratio, token_sort_ratio, token_set_ratio
+- **SBERT semantic (3):** sbert_cosine, sbert_absdiff, sbert_dot
