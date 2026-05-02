@@ -1,0 +1,41 @@
+# Python cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pyc.*
+
+# Virtual Environment
+quora/
+venv/
+env/
+.venv/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# VS Code settings
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Model files (optional)
+*.pkl
+*.joblib
+
+# Logs
+*.log
+
+# Environment variables
+.env
+
+# FastAPI / DB files
+*.sqlite3
+*.db
+
+# Build files
+build/
+dist/
+*.egg-info/
